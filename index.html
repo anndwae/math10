@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Green Algorithm | Objective Function Simulator</title>
+  <style>
+    :root {
+      --forest: #1B4332;
+      --mid-green: #2D6A4F;
+      --light-green: #D8F3DC;
+      --yellow: #FFB703;
+      --cream: #F8F9FA;
+      --charcoal: #212529;
+      --danger: #D90429;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--cream);
+      color: var(--charcoal);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .dashboard {
+      background: #ffffff;
+      border: 3px solid var(--forest);
+      border-radius: 16px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 8px 8px 0px var(--forest);
+      overflow: hidden;
+    }
+
+    .header {
+      background: var(--forest);
+      color: var(--cream);
+      padding: 20px 24px;
+      border-bottom: 3px solid var(--forest);
+    }
+
+    .header .tag {
+      background: var(--yellow);
+      color: var(--charcoal);
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      margin-top: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      font-size: 0.9rem;
+      color: var(--light-green);
+      margin-top: 4px;
+    }
+
+    .preset-bar {
+      display: flex;
+      gap: 10px;
+      padding: 16px 24px;
+      background: var(--light-green);
+      border-bottom: 2px solid var(--forest);
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid var(--forest);
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #fff;
+      color: var(--forest);
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover, .btn.active {
+      background: var(--forest);
+      color: var(--yellow);
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+    }
+
+    @media (max-width: 650px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .slider-group {
+      background: var(--cream);
+      padding: 14px;
+      border-radius: 10px;
+      border: 1.5px solid #dee2e6;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      color: var(--forest);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--forest);
+      cursor: pointer;
+    }
+
+    .equation-box {
+      background: var(--yellow);
+      border: 2px solid var(--forest);
+      padding: 12px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    .results {
+      background: var(--forest);
+      color: var(--cream);
+      padding: 20px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    .metric {
+      margin-bottom: 14px;
+    }
+
+    .metric-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--light-green);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+
+    .bar-bg {
+      background: rgba(255,255,255,0.15);
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .analysis-box {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 12px;
+      border-left: 4px solid var(--yellow);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-top: 10px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 12px;
+      font-size: 0.75rem;
+      background: var(--cream);
+      border-top: 2px solid var(--forest);
+      color: var(--charcoal);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard">
+    <div class="header">
+      <span class="tag">MATH 10 Interactive Module</span>
+      <h1>TUNING THE OBJECTIVE FUNCTION</h1>
+      <p>Adjust the mathematical weights in the AI agrochemical model to observe real-world trade-offs.</p>
+    </div>
+
+    <div class="preset-bar">
+      <button class="btn" id="btnExtractive" onclick="setPreset('extractive')">Preset A: Extractive AI (Profit Max)</button>
+      <button class="btn active" id="btnInclusive" onclick="setPreset('inclusive')">Preset B: Inclusive AI (Responsible Math)</button>
+    </div>
+
+    <div class="content">
+      <div class="controls">
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Weight α: Short-Term Yield Max</span>
+            <span id="valYield">65%</span>
+          </div>
+          <input type="range" id="sliderYield" min="0" max="100" value="65" oninput="updateModel()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Weight β: Ecological & Runoff Constraint</span>
+            <span id="valEco">85%</span>
+          </div>
+          <input type="range" id="sliderEco" min="0" max="100" value="85" oninput="updateModel()">
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Weight γ: Smallholder Local Data Equity</span>
+            <span id="valEquity">90%</span>
+          </div>
+          <input type="range" id="sliderEquity" min="0" max="100" value="90" oninput="updateModel()">
+        </div>
+
+        <div class="equation-box" id="liveEquation">
+          J = 0.65(Y) - 0.15(C_runoff) + 0.90(E_local)
+        </div>
+      </div>
+
+      <div class="results">
+        <div>
+          <div id="statusBadge" class="status-badge" style="background: var(--yellow); color: var(--charcoal);">
+            RESPONSIBLE & INCLUSIVE AI MODEL
+          </div>
+
+          <div class="metric">
+            <div class="metric-title">
+              <span>NPK Fertilizer Efficiency</span>
+              <span id="outNPK">92%</span>
+            </div>
+            <div class="bar-bg"><div id="barNPK" class="bar-fill" style="width: 92%; background: #52B788;"></div></div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-title">
+              <span>Nitrate/Phosphate Leaching Risk</span>
+              <span id="outRunoff">12% (Safe)</span>
+            </div>
+            <div class="bar-bg"><div id="barRunoff" class="bar-fill" style="width: 12%; background: #FFB703;"></div></div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-title">
+              <span>Projected Soil pH Stability</span>
+              <span id="outPH">6.4 pH (Optimal)</span>
+            </div>
+            <div class="bar-bg"><div id="barPH" class="bar-fill" style="width: 88%; background: #52B788;"></div></div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-title">
+              <span>Filipino Smallholder Accessibility</span>
+              <span id="outAccess">89%</span>
+            </div>
+            <div class="bar-bg"><div id="barAccess" class="bar-fill" style="width: 89%; background: #52B788;"></div></div>
+          </div>
+        </div>
+
+        <div class="analysis-box" id="analysisText">
+          <strong>Ag-Chem & Social Impact:</strong> Calculus optimization balances NPK uptake with soil buffering capacity. Tropical soil datasets empower local farmers without polluting watersheds.
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Designed by Annie Grace S. Alindogan | BS Agricultural Chemistry | MATH 10 Final Project (IDM 2027)
+    </div>
+  </div>
+
+  <script>
+    function setPreset(type) {
+      document.getElementById('btnExtractive').classList.remove('active');
+      document.getElementById('btnInclusive').classList.remove('active');
+
+      if (type === 'extractive') {
+        document.getElementById('btnExtractive').classList.add('active');
+        document.getElementById('sliderYield').value = 100;
+        document.getElementById('sliderEco').value = 5;
+        document.getElementById('sliderEquity').value = 10;
+      } else {
+        document.getElementById('btnInclusive').classList.add('active');
+        document.getElementById('sliderYield').value = 65;
+        document.getElementById('sliderEco').value = 85;
+        document.getElementById('sliderEquity').value = 90;
+      }
+      updateModel();
+    }
+
+    function updateModel() {
+      const y = parseInt(document.getElementById('sliderYield').value);
+      const eco = parseInt(document.getElementById('sliderEco').value);
+      const eq = parseInt(document.getElementById('sliderEquity').value);
+
+      document.getElementById('valYield').innerText = y + '%';
+      document.getElementById('valEco').innerText = eco + '%';
+      document.getElementById('valEquity').innerText = eq + '%';
+
+      const penalty = ((100 - eco) / 100).toFixed(2);
+      document.getElementById('liveEquation').innerText =
+        `J = ${(y/100).toFixed(2)}(Y) - ${penalty}(C_runoff) + ${(eq/100).toFixed(2)}(E_local)`;
+
+      // Calculate simulated outputs
+      const runoff = Math.max(5, Math.min(98, Math.round((y * 0.7) - (eco * 0.6) + 15)));
+      const efficiency = Math.max(20, Math.min(98, Math.round(100 - (runoff * 0.65) + (eq * 0.15))));
+      const ph = (6.8 - (runoff * 0.022)).toFixed(1);
+      const access = Math.round((eq * 0.75) + (eco * 0.25));
+
+      document.getElementById('outNPK').innerText = efficiency + '%';
+      document.getElementById('barNPK').style.width = efficiency + '%';
+
+      document.getElementById('outRunoff').innerText = runoff + (runoff > 50 ? '% (TOXIC)' : '% (Safe)');
+      document.getElementById('barRunoff').style.width = runoff + '%';
+      document.getElementById('barRunoff').style.background = runoff > 50 ? '#D90429' : '#FFB703';
+
+      document.getElementById('outPH').innerText = ph + (ph < 5.5 ? ' pH (Acidic)' : ' pH (Optimal)');
+      document.getElementById('barPH').style.width = Math.max(20, (ph / 7.5) * 100) + '%';
+      document.getElementById('barPH').style.background = ph < 5.5 ? '#D90429' : '#52B788';
+
+      document.getElementById('outAccess').innerText = access + '%';
+      document.getElementById('barAccess').style.width = access + '%';
+
+      const badge = document.getElementById('statusBadge');
+      const analysis = document.getElementById('analysisText');
+
+      if (runoff > 55 || access < 40) {
+        badge.style.background = '#D90429';
+        badge.style.color = '#FFFFFF';
+        badge.innerText = 'EXTRACTIVE & BIASED AI MODEL';
+        analysis.innerHTML = '<strong>Warning (Black Box Fallacy):</strong> Unchecked yield optimization triggers severe agrochemical overdose, soil acidification, and eutrophication while excluding smallholder Filipino farmers.';
+      } else if (eco >= 60 && eq >= 60) {
+        badge.style.background = '#FFB703';
+        badge.style.color = '#212529';
+        badge.innerText = 'RESPONSIBLE & INCLUSIVE AI MODEL';
+        analysis.innerHTML = '<strong>Ag-Chem & Social Impact:</strong> Calculus optimization balances NPK uptake with soil buffering capacity. Tropical soil datasets empower local farmers without polluting watersheds.';
+      } else {
+        badge.style.background = '#D8F3DC';
+        badge.style.color = '#1B4332';
+        badge.innerText = 'TRANSITIONAL MODEL (NEEDS TUNING)';
+        analysis.innerHTML = '<strong>System Note:</strong> Moderate chemical efficiency, but ecological constraints (β) and local equity weights (γ) need higher prioritization to prevent long-term soil degradation.';
+      }
+    }
+  </script>
+</body>
+</html>
